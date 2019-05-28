@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:v-model="http://www.w3.org/1999/xhtml"
+      xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head th:include="include/admin/adminHeader::html('用户管理')">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+</head>
+<body>
+<div th:replace="include/admin/adminNavigator::html"></div>
+<script type="text/javascript">
+    $(function () {
+var data4vue={
+    uri:"users",
+    pagination:{},
+    beans:[]
+};
+var vue=new Vue({
+    el:"#workingArea",
+    data:data4vue,
+    mounted:function () {
+    this.list(1);
+    },
+    methods:{
+        //分页查询
+        list:function (start) {
+            var url=this.uri+"?start="+start;
+            axios.get(url).then(function (response) {
+                vue.pagination=response.data;
+                vue.beans=response.data.list;
+            })
+        },
+        //跳转
+        jump:function (page) {
+            jump(page,vue);
+        },
+        //根据页码跳转
+        jumpByNumber:function (start) {
+            jumpByNumber(start,vue);
+        }
+    }
+});
+    })
+</script>
+<div id="workingArea">
+    <h1 class="label label-info" >用户管理</h1>
+    <br>
+    <br>
+    <div class="listDataTableDiv">
+        <table class="table table-bordered table-striped table-condensed table-hover">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>用户名</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="user in beans">
+                <td>{{user.id}}</td>
+                <td>{{user.name}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div th:replace="include/admin/adminPage::html"></div>
+</div>
+<div th:replace="include/admin/adminFooter::html" ></div>
+</body>
+</html>

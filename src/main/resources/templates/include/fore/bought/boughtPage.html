@@ -1,0 +1,184 @@
+<div th:fragment="html" xmlns:th="http://www.w3.org/1999/xhtml">
+<script type="text/javascript">
+$(function () {
+    var data4vue={
+        uri:"forebought",
+        orders:[]
+    };
+    var vue=new Vue({
+        el:"#workingArea",
+        data:data4vue,
+        mounted:function () {
+        this.load();
+        },
+        methods:{
+            load:function () {
+                var url=this.uri;
+                axios.get(url).then(function (response) {
+                    vue.orders=response.data;
+                    vue.$nextTick(function () {
+                        linkDefaultActions();
+                        orderPageListeners();
+                    })
+
+                })
+            }
+        }
+    });
+    var deleteOrder=false;//是否删除
+    var deleteOrderId=0;//需要删除的订单的id
+        function orderPageListeners() {
+
+            //订单状态栏（所有订单，待付款。。。）
+            $("a[orderStatus]").click(function () {//orderStatus是属性
+                var orderStatus=this.attr("orderStatus");//当前状态
+                if('all'==orderStatus){
+                    $("table[orderStatus]").show();
+                }else{
+                    $("table[orderStatus]").hide();
+                    $("table[orderStatus="+orderStatus+"]").show();
+                }
+                //去掉订单状态栏的每个盒子的样式
+                $("div.ordertype div").removeClass("selectedOrderType");
+                //给当前a链接的父亲div加上样式
+                $(this).parent("div").addClass("selectedOrderType");
+            });
+
+            //删除订单提示
+            $("a.deleteOrderLink").click(function(){
+                deleteOrderId = $(this).attr("oid");//获取当前订单id
+                deleteOrder = false;
+                $("#deleteConfirmModal").modal("show");
+            });
+            //确认删除订单
+            $("button.deleteConfirmButton").click(function(){
+                deleteOrder = true;
+                $("#deleteConfirmModal").modal('hide');
+            });
+            //hidden.bs.modal意思是模态弹窗关闭的时候进行回调
+            $("#deleteConfirmModal").on("hidden.bs.modal",function (e) {
+                //deleteOrder 为true时 表明已经是点击了确定删除按钮才导致弹窗关闭
+                if(deleteOrder){
+                    var url="foredeleteOrder?oid="+deleteOrderId;
+                    axios.delete(url).then(function (response) {
+                        if(response.data==0){
+                            $("table.orderListItemTable[oid="+deleteOrderId+"]").hide();
+                        }
+                        else{
+                            location.href="login";
+                        }
+
+                    })
+                }
+            })
+        }
+
+
+})
+</script>
+
+    <div class="boughtDiv">
+        <!--订单状态按钮部分-->
+        <div class="orderType">
+            <div class="selectedOrderType"><a orderStatus="all" href="#nowhere">所有订单</a></div>
+            <div><a  orderStatus="waitPay" href="#nowhere">待付款</a></div>
+            <div><a  orderStatus="waitDelivery" href="#nowhere">待发货</a></div>
+            <div><a  orderStatus="waitConfirm" href="#nowhere">待收货</a></div>
+            <div><a  orderStatus="waitReview" href="#nowhere" class="noRightborder">待评价</a></div>
+            <div class="orderTypeLastOne"><a class="noRightborder"> </a></div>
+        </div>
+        <div style="clear:both"></div>
+        <!--固定标题栏部分-->
+        <div class="orderListTitle">
+            <table class="orderListTitleTable">
+                <tr>
+                    <td>宝贝</td>
+                    <td width="100px">单价</td>
+                    <td width="100px">数量</td>
+                    <td width="120px">实付款</td>
+                    <td width="100px">交易操作</td>
+                </tr>
+            </table>
+
+        </div>
+        <!--显示订单部分  一个table 表示一个订单 此处开始遍历-->
+        <div class="orderListItem">
+            <table v-for="o in orders" class="orderListItemTable" :orderStatus="o.status" :oid="o.id">
+                <!--第一行显示订单编号等。。。-->
+                <tr class="orderListItemFirstTR">
+                    <td colspan="2">
+                        <b>{{o.createDate | formatDateFilter('YYYY-MM-DD') }}</b>
+                        <span>订单号: {{o.orderCode}}
+						</span>
+                    </td>
+                    <td  colspan="2"><img width="13px" src="static/img/site/orderItemTmall.png">天猫商场</td>
+                    <td colspan="1">
+                        <a class="wangwanglink" href="#nowhere">
+                            <div class="orderItemWangWangGif"></div>
+                        </a>
+
+                    </td>
+                    <!--删除按钮-->
+                    <td class="orderItemDeleteTD">
+                        <a class="deleteOrderLink" :oid="o.id" href="#nowhere">
+                            <span  class="orderListItemDelete glyphicon glyphicon-trash"></span>
+                        </a>
+
+                    </td>
+                </tr>
+                <!--第二行 显示订单项（包含订单总额和订单状态）-->
+                <tr class="orderItemProductInfoPartTR" v-for="oi,index in o.orderItems" >
+                    <!--第一个td 显示产品图片-->
+                    <td class="orderItemProductInfoPartTD"><img width="80" height="80" :src="'static/img/productSingle/productSingle_middle/'+oi.product.firstProductImage.id+'.jpg'"></td>
+                    <!--第二个td 显示产品标题-->
+                    <td class="orderItemProductInfoPartTD">
+                        <div class="orderListItemProductLinkOutDiv">
+                            <a :href="'product?pid='+oi.product.id">{{oi.product.name}}</a>
+                            <div class="orderListItemProductLinkInnerDiv">
+                                <img src="static/img/site/creditcard.png" title="支持信用卡支付">
+                                <img src="static/img/site/7day.png" title="消费者保障服务,承诺7天退货">
+                                <img src="static/img/site/promise.png" title="消费者保障服务,承诺如实描述">
+                            </div>
+                        </div>
+                    </td>
+                    <!--第三个td 显示产品原价跟优惠价格-->
+                    <td  class="orderItemProductInfoPartTD" width="100px">
+                        <div class="orderListItemProductOriginalPrice">￥{{oi.product.originalPrice|formatMoneyFilter}}</div>
+                        <div class="orderListItemProductPrice">￥{{oi.product.promotePrice|formatMoneyFilter}}</div>
+                    </td>
+                    <!--如果该订单的订单项-->
+                    <template>
+                        <!--显示购买数量 rowspan 合并行-->
+                        <td valign="top" :rowspan="o.orderItems.length" class="orderListItemNumberTD orderItemOrderInfoPartTD" width="100px">
+                            <span class="orderListItemNumber">{{o.totalNumber}}</span>
+                        </td>
+                        <!--显示总金额-->
+                        <td valign="top"  :rowspan="o.orderItems.length"  width="120px" class="orderListItemProductRealPriceTD orderItemOrderInfoPartTD">
+                            <div class="orderListItemProductRealPrice">￥ {{o.total|formatMoneyFilter}}</div>
+                            <div class="orderListItemPriceWithTransport">(含运费：￥0.00)</div>
+                        </td>
+                        <!--显示订单状态（四种状态）-->
+                        <td valign="top"  :rowspan="o.orderItems.length"  class="orderListItemButtonTD orderItemOrderInfoPartTD" width="100px">
+                            <a v-if="o.status=='waitConfirm'" :href="'confirmPay?oid='+o.id">
+                                <button class="orderListItemConfirm">确认收货</button>
+
+                            </a>
+
+                            <a v-if="o.status=='waitPay'" :href="'alipay?oid='+o.id">
+                                <button class="orderListItemConfirm">付款</button>
+                            </a>
+
+                            <div  v-if="o.status=='waitDelivery'">
+                                <span>待发货</span>
+                            </div>
+
+                            <a v-if="o.status=='waitReview'" :href="'review?oid='+o.id">
+                                <button  class="orderListItemReview">评价</button>
+                            </a>
+                        </td>
+                    </template>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>

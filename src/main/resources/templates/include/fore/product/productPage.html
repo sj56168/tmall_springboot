@@ -1,0 +1,62 @@
+<div th:fragment="html" xmlns:th="http://www.thymeleaf.org">
+    <script type="text/javascript">
+    $(function () {
+        var pid=getUrlParam("pid");//从地址栏获取产品id
+        var data4vue={
+            uri:"foreproduct",
+            product:'',
+            category:null,
+            firstProductImage:null,  //产品首图
+            reviews:[],
+            propertyValues:[],
+            showDetail:true,
+            showReview:false,
+            user:{name:'',password:''}
+        };
+        var vue=new Vue({
+            el:"#workingArea",
+            data:data4vue,
+            mounted:function () {
+                linkDefaultActions();
+                this.load();
+            },
+            methods:{
+                load:function () {
+                    var url=this.uri+"/"+pid;
+                    axios.get(url).then(function (response) {
+                        vue.product=response.data.product;
+                        vue.reviews=response.data.reviews;
+                        vue.propertyValues=response.data.propertyValues;
+                        vue.category=vue.product.category;
+                        vue.firstProductImage=vue.product.firstProductImage;
+                        vue.$nextTick(function () {
+                            imgAndInfoPageRegisterListeners(vue);
+                        })
+
+                    })
+                },
+                //切换到详情
+                toggle2Detail:function () {
+                    vue.showDetail=true;
+                    vue.showReview=false;
+                },
+                //切换到评价
+                toggle2Review:function () {
+                    vue.showDetail=false;
+                    vue.showReview=true;
+                }
+            }
+        })
+    })
+    </script>
+    <title>天猫官网 -- {{product.name}}</title>
+    <div class="categoryPictureInProductPageDiv">
+        <!--分类图-->
+        <img v-if="category!=null" class="categoryPictureInProductPage" :src="'static/img/category/'+category.id+'.jpg'">
+    </div>
+<div class="productPageDiv">
+    <div th:replace="include/fore/product/imgAndInfo::html"> </div>
+    <div th:replace="include/fore/product/productReview::html"></div>
+    <div th:replace="include/fore/product/productDetail::html"> </div>
+</div>
+</div>

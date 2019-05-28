@@ -1,0 +1,59 @@
+<div th:fragment="html" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+    <script type="text/javascript">
+$(function () {
+    //根据输入价格区间显示产品
+    $("input.sortBarPrice").keyup(function () {//键盘按下松开触发事件keyup
+        var num=$(this).val();
+        if(num.length==0){
+            //如果价格输入框没输入数字，则显示每个产品
+            $("div.productUnit").show();
+            return;
+        }
+        num=parseInt(num);
+        if(isNaN(num))num=1;
+        if(num<0)num=1;
+        $(this).val(num);
+
+        var begin=$("input.beginPrice").val();
+        var end=$("input.endPrice").val();
+        if(!isNaN(begin)&&!isNaN(end)){ //输入必须是数字
+            //如果输入框有输入，则先隐藏全部产品
+            $("div.productUnit").hide();
+            //然后再遍历每个产品，再把在价格区间内的产品显示出来
+            $("div.productUnit").each(function () {
+                //通过自定义属性price拿到当前产品的价格
+                var price=$(this).attr("price");
+                price=new Number(price);
+                if(price<=end&&price>=begin){
+                    //如果该产品在该价格区间内 则显示
+                    $(this).show();
+                }
+            })
+        }
+
+
+
+
+    })
+})
+    </script>
+    <div class="categorySortBar">
+        <table class="categorySortBarTable categorySortTable">
+            <tr> <!--v-bind:href 缩写是:href-->
+                <td v-bind:class="{'grayColumn':(sort==null||sort=='all')}"><a v-bind:href="'category?cid='+category.id+'&sort=all'">综合<span class="glyphicon glyphicon-arrow-down"></span></a></td>
+                <td v-bind:class="{'grayColumn':(sort==null||sort=='review')}"><a v-bind:href="'category?cid='+category.id+'&sort=review'">人气<span class="glyphicon glyphicon-arrow-down"></span></a></td>
+                <td v-bind:class="{'grayColumn':(sort==null||sort=='date')}"><a :href="'category?cid='+category.id+'&sort=date'">新品<span class="glyphicon glyphicon-arrow-down"></span></a></td>
+                <td v-bind:class="{'grayColumn':(sort==null||sort=='saleCount')}"><a :href="'category?cid='+category.id+'&sort=saleCount'">销量<span class="glyphicon glyphicon-arrow-down"></span></a></td>
+                <td v-bind:class="{'grayColumn':(sort==null||sort=='price')}"><a :href="'category?cid='+category.id+'&sort=price'">价格<span class="glyphicon glyphicon-resize-vertical"></span></a></td>
+            </tr>
+        </table>
+        <table class="categorySortBarTable">
+            <tr>
+                <td><input class="sortBarPrice beginPrice" type="text" placeholder="请输入"></td>
+                <td class="grayColumn priceMiddleColumn">-</td>
+                <td><input class="sortBarPrice endPrice" type="text" placeholder="请输入"></td>
+            </tr>
+        </table>
+
+    </div>
+</div>

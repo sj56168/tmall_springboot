@@ -1,0 +1,29 @@
+<div th:fragment="html" xmlns:th="http://www.w3.org/1999/xhtml">
+<script type="text/javascript">
+    $(function () {
+        var oid=getUrlParam("oid");
+        var vue=new Vue({
+            el:"#workingArea",
+            data:{
+                uri:"foreorderConfirmed"
+            },
+            mounted:function () {
+                this.load()
+            },
+            methods:{
+                load:function () {
+                    var url=this.uri+"?oid="+oid;
+                    axios.get(url);//只需要后台改变订单状态 无需返回内容
+                }
+            }
+        })
+    })
+
+</script>
+    <div class="orderFinishDiv">
+        <div class="orderFinishTextDiv">
+            <img src="static/img/site/orderFinish.png">
+            <span>交易已经成功，卖家将收到您的货款。</span>
+        </div>
+    </div>
+</div>

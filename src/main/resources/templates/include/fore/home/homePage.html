@@ -1,0 +1,111 @@
+<div th:fragment="html" xmlns:th="http://www.thymeleaf.org" >
+<script type="text/javascript">
+    //根据cid 显示商品分类右侧 该分类的所有产品 subTitle的一部分
+    function showProductsAsideCategorys(cid){
+        $("div.eachCategory[cid="+cid+"]").css("background-color","white");
+        $("div.eachCategory[cid="+cid+"] a").css("color","#87CEFA");
+        $("div.productsAsideCategorys[cid="+cid+"]").show();
+    }
+    //根据cid 隐藏商品分类右侧 该分类的所有产品 subTitle的一部分
+    function hideProductsAsideCategorys(cid){
+        $("div.eachCategory[cid="+cid+"]").css("background-color","#e2e2e3");
+        $("div.eachCategory[cid="+cid+"] a").css("color","#000");
+        $("div.productsAsideCategorys[cid="+cid+"]").hide();
+    }
+    //监听 鼠标滑入滑出
+    function homePageRegisterListeners(){
+        //鼠标滑入分类栏
+        $("div.eachCategory").mouseenter(function(){
+            var cid = $(this).attr("cid");
+            showProductsAsideCategorys(cid);
+        });
+        $("div.eachCategory").mouseleave(function(){
+            var cid = $(this).attr("cid");
+            hideProductsAsideCategorys(cid);
+        });
+        //鼠标滑入
+        $("div.productsAsideCategorys").mouseenter(function(){
+            var cid = $(this).attr("cid");
+            showProductsAsideCategorys(cid);
+        });
+        $("div.productsAsideCategorys").mouseleave(function(){
+            var cid = $(this).attr("cid");
+            hideProductsAsideCategorys(cid);
+        });
+
+        $("div.rightMenu span").mouseenter(function(){
+            var left = $(this).position().left;
+            var top = $(this).position().top;
+            var width = $(this).css("width");
+            var destLeft = parseInt(left) + parseInt(width)/2;
+            $("img#catear").css("left",destLeft);
+            $("img#catear").css("top",top-20);
+            $("img#catear").fadeIn(500);
+
+        });
+        $("div.rightMenu span").mouseleave(function(){
+            $("img#catear").hide();
+        });
+
+        var left = $("div#carouselOfProduct").offset().left;
+        $("div.categoryMenu").css("left",left-20);
+        $("div.categoryWithCarousel div.head").css("margin-left",left);
+        $("div.productsAsideCategorys").css("left",left-20);
+
+        $("div.productsAsideCategorys div.row a").each(function(){
+            var v = Math.round(Math.random() *6);
+            if(v == 1)
+                $(this).css("color","#87CEFA");
+        });
+    }
+
+    $(function(){
+             var data4Vue = {
+            uri:'forehome',
+            categories: []
+        };
+        //ViewModel
+     var vue = new Vue({
+            el: '#workingArea',
+            data: data4Vue,
+            mounted:function(){ //mounted　表示这个 Vue 对象加载成功了
+                linkDefaultActions();
+                this.load();
+            },
+            methods: {
+                load:function(){
+                    var url =  this.uri;
+                    axios.get(url).then(function(response) {
+                        vue.categories = response.data;
+                        vue.$nextTick(function(){
+                            //要等渲染结束之后，才来进行监听，否则他们都没有被创建出来，监听也没有意义呀
+                            homePageRegisterListeners();
+                        })
+                    });
+                }
+            },
+            filters:{
+                subTitleFilter:function(value) {
+                    if (!value) return ''; //如果为空，则返回空字符串
+                    return value.split(" ")[0]; //根据空格拆分，并且只获取数组第一个值
+                }
+            }
+        });
+
+
+    });
+</script>
+    <title>天猫官网</title>
+    <div class="homepageDiv">
+        <!--分类和轮播  分类轮播又包含
+            1.1 categoryMenu.html
+            竖状分类菜单
+            1.2 productsAsideCategorys.html
+            竖状分类菜单右侧的推荐产品列表
+            1.3 carousel.html
+            轮播-->
+        <div th:replace="include/fore/home/categoryAndcarousel::html"></div>
+        <!--总体17种分类以及每种分类对应的5个产品-->
+        <div th:replace="include/fore/home/homepageCategoryProducts::html"></div>
+    </div>
+</div>

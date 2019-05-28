@@ -1,0 +1,51 @@
+<div th:fragment="html" xmlns:th="http://www.w3.org/1999/xhtml">
+<script type="text/javascript">
+ $(function () {
+    // var total=getUrlParam("total");//总价
+     var oid=getUrlParam("oid"); //订单id
+     var data4vue={
+         uri:"forepaying",
+         total:0,
+         oid:''
+     };
+     var vue=new Vue({
+         el:"#workingArea",
+         data:data4vue,
+         mounted:function () {
+            this.allPrice();
+            this.oid=oid;
+         },
+         methods:{
+             allPrice:function () {
+                var url=this.uri+"?oid="+oid;
+                axios.get(url).then(function (response) {
+                    //返回订单总额
+                    vue.total=response.data;
+                    console.log(vue.total);
+                })
+             }
+         }
+     })
+ })
+</script>
+    <div class="aliPayPageDiv">
+        <div class="aliPayPageLogo">
+            <img class="pull-left" src="static/img/site/simpleLogo.png">
+            <div style="clear: both"></div>
+        </div>
+
+        <div>
+            <span class="confirmMoneyText">扫一扫付款（元）</span>
+            <span class="confirmMoney">￥ {{total|formatMoneyFilter}} </span>
+        </div>
+
+        <div>
+            <img class="aliPayImg" src="static/img/site/alipay2wei.png">
+        </div>
+
+        <div>
+            <a :href="'payed?oid='+oid+'&total='+total"><button class="confirmPay">确认支付</button></a>
+        </div>
+
+    </div>
+</div>

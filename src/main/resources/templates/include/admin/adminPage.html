@@ -1,0 +1,10 @@
+<div class="pageDiv" th:fragment="html" xmlns:th="http://www.w3.org/1999/xhtml">
+    <ul class="pagination">
+        <!--disabled 是bootstrap里面的 disabled：true时禁止-->
+        <li :class="{disabled:pagination.pageNum==1}"><a href="#aa" @click="jump('first')">«</a></li>
+        <li :class="{disabled:!pagination.hasPreviousPage}"><a href="#aa" @click="jump('pre')">‹</a></li>
+        <li :class="{disabled:pagination.pageNum==i}" v-for="i in pagination.navigatepageNums"><a href="#aa" @click="jumpByNumber(i)">{{i}}</a></li>
+        <li :class="{disabled:!pagination.hasNextPage}"><a href="#aa" @click="jump('next')">›</a></li>
+        <li :class="{disabled:pagination.pageNum==pagination.pages}"><a href="#aa" @click="jump('last')">»</a></li>
+    </ul>
+</div>
